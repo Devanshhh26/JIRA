@@ -7,7 +7,6 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
-//Signup a new User
 const signup = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
@@ -34,7 +33,6 @@ const signup = async (req, res) => {
     }
 };
 
-// Log in an existing user
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -55,7 +53,7 @@ const login = async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: false, // Use secure cookies in production
+            secure: false,
             maxAge: 24 * 60 * 60 * 1000, 
         });    
         return res.status(200).json({

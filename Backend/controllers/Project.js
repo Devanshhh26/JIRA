@@ -16,14 +16,14 @@ const createProject = async (req, res) => {
                 return res.status(404).json({ message: 'Team not found.' });
             }
         }
-
+        
         const newProject = new Project({
             name,
             description,
             owner: req.user._id, 
             team: teamId || null,
         });
-
+ 
         await newProject.save();
 
         return res.status(201).json({
