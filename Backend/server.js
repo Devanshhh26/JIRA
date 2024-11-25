@@ -7,6 +7,8 @@ const database = require("./config/database");
 const userRoutes=require("./routes/User");
 const projectRoutes=require("./routes/Project");
 const taskRoutes=require("./routes/Task");
+const teamRoutes=require("./routes/Team");
+const commentRoutes=require("./routes/Comment");
 
 dotenv.config();
 const PORT = process.env.PORT || 4000;
@@ -18,6 +20,8 @@ app.use(express.json());
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/project",projectRoutes);
 app.use("/api/v1/task",taskRoutes);
+app.use("/api/v1/team",teamRoutes);
+app.use("/api/v1/comment",commentRoutes);
 
 app.get("/", (req, res) => {
 	return res.json({
