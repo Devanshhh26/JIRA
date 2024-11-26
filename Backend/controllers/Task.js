@@ -1,6 +1,8 @@
 const Task=require("../models/Task");
 const Project=require("../models/Project");
 const Comment = require('../models/Comment');
+const { createAuditLog } = require('../controllers/AuditLog');
+
 
 const createTask=async(req,res)=>{
     try{
@@ -26,6 +28,9 @@ const createTask=async(req,res)=>{
         const savedTask=await newTask.save();
         projectExists.tasks.push(savedTask._id);
         await projectExists.save();
+
+        await createAuditLog('Task Created', `Task "${title}" created in project "${projectExists.name}"`, req.user._id);
+
         return res.status(201).json({
             success:true,
             message:"task Created Successfully",
@@ -74,6 +79,12 @@ const editTask = async (req, res) => {
 
         const updatedTask = await task.save();
 
+        await createAuditLog(
+            'Task Updated',
+            `Task "${task.title}" was updated by ${isCreator ? 'owner' : 'assignee'}`,
+            req.user._id
+        );
+
         return res.status(200).json({
             success: true,
             message: 'Task updated successfully',
@@ -105,6 +116,9 @@ const deleteTask = async (req, res) => {
                 { new: true }
             );
             await task.remove();
+
+            await createAuditLog('Task Deleted', `Task "${task.title}" was deleted from project "${task.project.name}"`, userId);
+
             return res.status(200).json({
                 success: true,
                 message: 'Task deleted successfully',
@@ -162,6 +176,12 @@ const getTaskById = async (req, res) => {
   
       task.assignedTo = userId;
       await task.save();
+
+    //   await createAuditLog(
+    //     'Task Assigned',
+    //     `Task "${task.title}" was assigned to user ID ${userId}`,
+    //     req.user._id
+    // );
   
       res.status(200).json({ message: 'Task assigned successfully', task });
     } catch (error) {
