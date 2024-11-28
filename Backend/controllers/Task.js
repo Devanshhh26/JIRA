@@ -1,6 +1,7 @@
 const Task=require("../models/Task");
 const Project=require("../models/Project");
 const Comment = require('../models/Comment');
+const Attachment = require('../models/FileUpload');
 const { createAuditLog } = require('../controllers/AuditLog');
 
 
@@ -138,7 +139,8 @@ const getTaskById = async (req, res) => {
     try {
       const task = await Task.findById(req.params.id)
         .populate('assignedTo')
-        .populate('project');
+        .populate('project')
+        .populate('attachments'); 
       
       if (!task) {
         return res.status(404).json({ message: 'Task not found' });
@@ -154,7 +156,8 @@ const getTaskById = async (req, res) => {
     try {
       const tasks = await Task.find()
         .populate('assignedTo')
-        .populate('project');
+        .populate('project')
+        .populate('attachments'); 
       
       res.status(200).json({ tasks });
     } catch (error) {
@@ -177,11 +180,11 @@ const getTaskById = async (req, res) => {
       task.assignedTo = userId;
       await task.save();
 
-    //   await createAuditLog(
-    //     'Task Assigned',
-    //     `Task "${task.title}" was assigned to user ID ${userId}`,
-    //     req.user._id
-    // );
+      await createAuditLog(
+        'Task Assigned',
+        `Task "${task.title}" was assigned to user ID ${userId}`,
+        req.user._id
+    );
   
       res.status(200).json({ message: 'Task assigned successfully', task });
     } catch (error) {
@@ -199,7 +202,10 @@ const getAllTasksForProject = async (req, res) => {         // fetches all tasks
         const project = await Project.findById(projectId).populate('owner');
 
         if (!project) {
-            return res.status(404).json({ message: 'Project not found' });
+            return res.status(404).json({ message: 'Project not found' })
+            .populate('assignedTo')
+            .populate('project')
+            .populate('attachments');
         }
 
         if (project.owner._id.toString() !== userId.toString()) {
@@ -221,11 +227,13 @@ const getAllTasksForProject = async (req, res) => {         // fetches all tasks
 
 
 const getAllTasksAssignedToUser = async (req, res) => {
-    const userId = req.user._id; // Assuming authentication middleware has set `req.user`
+    const userId = req.user._id;
 
     try {
-        // Fetch all tasks assigned to the current user
-        const tasks = await Task.find({ assignedTo: userId });
+        const tasks = await Task.find({ assignedTo: userId })
+        .populate('assignedTo')
+        .populate('project')
+        .populate('attachments');
 
         if (tasks.length === 0) {
             return res.status(404).json({ message: 'No tasks assigned to you' });
@@ -279,6 +287,41 @@ const addCommentToTask = async (req, res) => {
 };
 
 
-  // file upload baad me 
 
-module.exports={createTask, editTask, deleteTask,getTaskById,getAllTasks,assignTask ,getAllTasksForProject , getAllTasksAssignedToUser, addCommentToTask};
+const uploadFilesToTask = async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        const files = req.files;
+        const attachmentIds = [];
+
+        for (let file of files) {
+            const newAttachment = new Attachment({
+                url: file.path,
+                task: taskId,
+                uploadedBy: req.user._id,
+            });
+            const savedAttachment = await newAttachment.save();
+            attachmentIds.push(savedAttachment._id); 
+        }
+
+        task.attachments.push(...attachmentIds);
+        await task.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Files uploaded successfully',
+            attachments: attachmentIds,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error uploading files', error });
+    }
+};
+
+
+module.exports={createTask, editTask, deleteTask,getTaskById,getAllTasks,assignTask ,getAllTasksForProject , getAllTasksAssignedToUser, addCommentToTask,uploadFilesToTask};

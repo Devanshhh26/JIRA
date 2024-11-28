@@ -23,7 +23,7 @@ const getAuditLogs = async (req, res) => {
         const filters = {};
 
         if (userId) filters.performedBy = userId;
-        if (action) filters.action = new RegExp(action, 'i'); // Case-insensitive search
+        if (action) filters.action = new RegExp(action, 'i');
         if (startDate) filters.timestamp = { $gte: new Date(startDate) };
         if (endDate) {
             filters.timestamp = filters.timestamp || {};
@@ -31,7 +31,7 @@ const getAuditLogs = async (req, res) => {
         }
 
         const logs = await AuditLog.find(filters)
-            .populate('performedBy', 'name email') // Replace with actual User fields
+            .populate('performedBy', 'name email') 
             .sort({ timestamp: -1 });
 
         return res.status(200).json({

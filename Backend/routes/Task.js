@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
+const upload = require('../utils/fileUpload');
 const { 
     createTask,
     editTask, 
@@ -9,7 +10,8 @@ const {
     getAllTasks,
     getAllTasksForProject , 
     getAllTasksAssignedToUser, 
-    addCommentToTask 
+    addCommentToTask,
+    uploadFilesToTask
 } = require('../controllers/Task');
 
 // Route to create a task
@@ -35,5 +37,9 @@ router.get('/user/tasks', authenticate, getAllTasksAssignedToUser);
 
 // Route to add a comment to a task
 router.post('/task/:taskId/comments', authenticate, addCommentToTask);
+
+// Route to upload file
+router.post('/tasks/:taskId/upload-multiple', authenticate, upload.array('files', 10), uploadFilesToTask);
+
 
 module.exports = router;

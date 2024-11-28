@@ -16,7 +16,7 @@ const TaskSchema = new Schema({
         createdAt: { type: Date, default: Date.now } 
     }],
     tags: [String],
-    attachments: [String],
+    attachments: [{ type: Schema.Types.ObjectId, ref: 'Attachment' }],
     activityLog: [{ 
         action: String, 
         performedBy: { type: Schema.Types.ObjectId, ref: 'User' }, 

@@ -33,7 +33,7 @@ const createNotification = async (req, res) => {
 
 const getNotifications = async (req, res) => {
     try {
-        const userId = req.user._id; // Assuming authentication middleware sets req.user
+        const userId = req.user._id; 
         const { unreadOnly } = req.query;
 
         const filter = { user: userId };
@@ -85,7 +85,7 @@ const markNotificationAsRead = async (req, res) => {
 
 const markAllNotificationsAsRead = async (req, res) => {
     try {
-        const userId = req.user._id; // Assuming authentication middleware sets req.user
+        const userId = req.user._id; 
 
         await Notification.updateMany({ user: userId, read: false }, { $set: { read: true } });
 
@@ -127,7 +127,7 @@ const deleteNotification = async (req, res) => {
 
 const deleteAllNotifications = async (req, res) => {
     try {
-        const userId = req.user._id; // Assuming authentication middleware sets req.user
+        const userId = req.user._id;
 
         await Notification.deleteMany({ user: userId });
 

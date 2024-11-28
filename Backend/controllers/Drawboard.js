@@ -4,9 +4,8 @@ const Project = require('../models/Project');
 const createDrawboard = async (req, res) => {
     try {
         const { project, data } = req.body;
-        const userId = req.user._id; // Assuming authentication middleware sets req.user
+        const userId = req.user._id; 
 
-        // Validate project
         const projectExists = await Project.findById(project);
         if (!projectExists) {
             return res.status(404).json({ success: false, message: 'Project not found.' });
@@ -61,7 +60,7 @@ const updateDrawboard = async (req, res) => {
     try {
         const { projectId } = req.params;
         const { data } = req.body;
-        const userId = req.user._id; // Assuming authentication middleware sets req.user
+        const userId = req.user._id;
 
         const drawboard = await Drawboard.findOne({ project: projectId });
 
