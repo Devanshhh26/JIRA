@@ -56,6 +56,7 @@ const login = async (req, res) => {
         });    
         return res.status(200).json({
             message: 'Login successful.',
+            success:true,
             user: {
                 id: user._id,
                 name: user.name,
@@ -102,6 +103,23 @@ const deleteAccount = async (req, res) => {
     }
 };
 
+const profile=async(req,res)=>{
+    try{
+        const user = req.user;
+        return res.status(200).json({
+        message: 'User information fetched successfully.',
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        },
+        });
+    }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
 
 
-module.exports = { signup, login, deleteAccount,logout };
+module.exports = { signup, login, deleteAccount,logout,profile };
