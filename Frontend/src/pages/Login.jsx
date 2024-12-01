@@ -3,23 +3,33 @@ import { useForm } from 'react-hook-form';
 import { TextField, Button, CircularProgress } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../slices/userSlice';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const onSubmit = async (data) => {
     setLoading(true);
 
     try {
       console.log('Submitting login data:', data);
-      const response = await axios.post('http://localhost:3000/api/v1/auth/login', data,{
-        withCredentials:true
-      })
+      const response = await axios.post('http://localhost:3000/api/v1/auth/login', data, {
+        withCredentials: true,
+      });
+
       console.log('Login response:', response);
-      if (response.data.success) {
+
+      if (response.status === 200) {
+        dispatch(
+          setUser({
+            user: response.data.user,
+            isAuthenticated: true,
+          })
+        );
         navigate('/dashboard');
       }
     } catch (error) {
@@ -41,7 +51,13 @@ const Login = () => {
               label="Email"
               variant="outlined"
               fullWidth
-              {...register('email', { required: 'Email is required', pattern: { value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/, message: 'Invalid email address' } })}
+              {...register('email', { 
+                required: 'Email is required', 
+                pattern: { 
+                  value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/, 
+                  message: 'Invalid email address' 
+                } 
+              })}
               error={!!errors.email}
               helperText={errors.email?.message}
             />
