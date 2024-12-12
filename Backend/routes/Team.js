@@ -1,15 +1,15 @@
 const express = require('express');
 const { authenticate } = require('../middleware/auth');
-const { createTeam, addMemberToTeam, removeMemberFromTeam,deleteTeam} = require('../controllers/Team');
+const { createTeam, addMemberToTeam, removeMemberFromTeam,deleteTeam, getUserTeams, updateTeam} = require('../controllers/Team');
 
 const router = express.Router();
 
 router.post('/create', authenticate, createTeam);
 
-router.post('/:teamId/add-member', authenticate, addMemberToTeam);
+router.delete('/delete/:teamId', authenticate, deleteTeam);
 
-router.post('/:teamId/remove-member', authenticate, removeMemberFromTeam);
+router.get('/userteams', authenticate, getUserTeams);
 
-router.delete('/:teamId', authenticate, deleteTeam);
+router.put('/update/:teamId', authenticate, updateTeam);
 
 module.exports = router;

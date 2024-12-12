@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@mui/material';
 import axios from 'axios';
 import { updateUser, logout } from '../slices/userSlice';
+import NavBar from '../components/Navbar';
+import UpdateUserForm from '../components/UpdateUserForm';
+
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -50,14 +53,13 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard">
-      <h1>Welcome to your Dashboard</h1>
-      <p>Name: {user?.name}</p>
-      <p>Email: {user?.email}</p>
-      <p>Role: {user?.role}</p>
-      <Button variant="contained" color="primary" onClick={handleLogout}>
-        Logout
-      </Button>
+    <div>
+      <NavBar/>
+      <div className="dashboard">
+        <Button variant="contained" color="primary" onClick={handleLogout}>
+          Logout
+        </Button>
+      </div>
     </div>
   );
 };

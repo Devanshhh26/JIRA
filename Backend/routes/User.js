@@ -1,7 +1,8 @@
 const express = require("express"); 
 const router = express.Router();
-const { signup, login, deleteAccount, logout, profile } = require("../controllers/Auth");
+const { signup, login, deleteAccount, logout, profile, updateUser, getAvailableUsers } = require("../controllers/Auth");
 const { authenticate } = require("../middleware/auth");
+const { getAllProjects } = require("../controllers/Project");
 
 // Route for user login
 router.post("/login", login);
@@ -17,5 +18,11 @@ router.delete("/deleteAccount", authenticate, deleteAccount);
 
 //Route to get profile
 router.get("/profile",authenticate,profile);
+
+//Route to update the User
+router.put("/updateUser",authenticate,updateUser);
+
+//router to get aal available users
+router.get('/available-users', getAvailableUsers);
 
 module.exports = router;

@@ -121,5 +121,53 @@ const profile=async(req,res)=>{
     }
 }
 
+const updateUser = async (req, res) => {
+    try {
+      const { name, email, role, password, confirmPassword } = req.body;
+      const userId = req.user?._id;
+  
+      if (!userId) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
 
-module.exports = { signup, login, deleteAccount,logout,profile };
+      if (password && password !== confirmPassword) {
+        return res.status(400).json({ success: false, message: "Passwords do not match" });
+      }
+
+      const updatePayload = {};
+      if (name) updatePayload.name = name;
+      if (email) updatePayload.email = email;
+      if (role) updatePayload.role = role;
+
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        updatePayload.password = hashedPassword;
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(userId, updatePayload, { new: true });
+  
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+  
+      return res.status(200).json({ success: true, message: 'User updated successfully', user: updatedUser });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+  };
+  
+
+  const getAvailableUsers = async (req, res) => {
+    try {
+        const users = await User.find({ team: null }).select('_id name email');
+        return res.status(200).json({ success: true, users });
+    } catch (error) {
+        console.error('Error fetching available users:', error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+
+
+module.exports = { signup, login, deleteAccount,logout,profile,updateUser, getAvailableUsers };

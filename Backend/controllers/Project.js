@@ -163,6 +163,16 @@ const getAllProjects = async (req, res) => {
     }
 };
 
+const getProjectsAssignedToUser=async(req,res)=>{
+    try{
+        const {userId}=userId;
+        const Project=await Project.find({assigned})
+    } catch (error) {
+        console.error('Error fetching projects:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
 const archiveProject = async (req, res) => {
     try {
         const { projectId } = req.params;

@@ -40,82 +40,6 @@ const createTeam = async (req, res) => {
     }
 };
 
-const addMemberToTeam=async(req,res)=>{
-    try{
-        const {teamId}=req.params;
-        const {memberId}=req.body;
-        const userId=req.user._id;
-        console.log(memberId);
-        const team=await Team.findById(teamId);
-
-        if(!team){
-            return res.status(404).json({ success:false,message: 'Team not found.' });
-        }
-        if(team.createdBy.toString()!==userId.toString()){
-            return res.status(403).json({ success:false,message: 'Not Authorized to add memebers' });
-        }
-        if(team.members.includes(memberId)){
-            return res.status(400).json({success:false, message: "Member already in the team"});
-        }
-        const member=await User.findById(memberId);
-        if(!member){
-            return res.status(404).json({ success:false,message: 'User not found.' });
-        }
-        team.members.push(memberId);
-        await team.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Member added to Team successfully",
-            team
-        })
-
-    }catch(error){
-        console.error('Error adding member:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal Server Error',
-        });
-    }
-}
-
-
-const removeMemberFromTeam = async (req, res) => {
-    try {
-        const { teamId } = req.params;
-        const { memberId } = req.body; 
-        const userId = req.user._id;
-
-        const team = await Team.findById(teamId);
-
-        if (!team) {
-            return res.status(404).json({ message: 'Team not found.' });
-        }
-
-        if (team.createdBy.toString() !== userId.toString()) {
-            return res.status(403).json({ message: 'You are not authorized to remove members from this team.' });
-        }
-
-        if (!team.members.includes(memberId)) {
-            return res.status(400).json({ message: 'Member is not in the team.' });
-        }
-
-        team.members = team.members.filter((id) => id.toString() !== memberId.toString());
-        await team.save();
-
-        return res.status(200).json({
-            success: true,
-            message: 'Member removed successfully.',
-            team,
-        });
-    } catch (error) {
-        console.error('Error removing member:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal Server Error',
-        });
-    }
-};
 
 const deleteTeam = async (req, res) => {
     try {
@@ -132,10 +56,10 @@ const deleteTeam = async (req, res) => {
             return res.status(403).json({ success: false, message: 'You are not authorized to delete this team.' });
         }
 
-        // Update all projects associated with the team to remove the team reference
+        
         await Project.updateMany(
-            { _id: { $in: team.projects } }, // Find projects associated with the team
-            { $set: { team: null } }         // Set their team field to null
+            { _id: { $in: team.projects } },
+            { $set: { team: null } }        
         );
 
         await Team.findByIdAndDelete(teamId);
@@ -153,4 +77,69 @@ const deleteTeam = async (req, res) => {
     }
 };
 
-module.exports={createTeam,addMemberToTeam,removeMemberFromTeam,deleteTeam};
+const getUserTeams = async (req, res) => {
+    try {
+      const userId = req.user._id; 
+
+      const teams = await Team.find({ createdBy: userId })
+        .populate('members', 'name email') 
+        .populate('projects', 'title description')
+        .exec();
+  
+      if (!teams.length) {
+        return res.status(404).json({
+          success: false,
+          message: 'No teams found created by this user.',
+        });
+      }
+  
+      res.status(200).json({
+        success: true,
+        teams,
+      });
+    } catch (error) {
+      console.error('Error fetching user teams:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+      });
+    }
+  };
+
+  const updateTeam = async (req, res) => {
+    try {
+      const { teamId } = req.params;
+      const { name, members } = req.body;
+  
+      const team = await Team.findById(teamId);
+      if (!team) {
+        return res.status(404).json({ message: 'Team not found.' });
+      }
+  
+      if (team.createdBy.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'You do not have permission to edit this team.' });
+      }
+  
+      if (name) team.name = name;
+      if (members) team.members = members;
+  
+      const updatedTeam = await team.save();
+  
+      res.status(200).json({
+        success: true,
+        message: 'Team updated successfully.',
+        updatedTeam,
+      });
+    } catch (error) {
+      console.error('Error updating team:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+      });
+    }
+  };
+  
+  
+
+
+module.exports={createTeam,deleteTeam,getUserTeams,updateTeam};
